@@ -51,8 +51,19 @@ export default function Dashboard() {
   };
 
   const fetchAuditLogs = async () => {
-    const { data, error } = await supabase.from("audit_logs").select("*").order("created_at", { ascending: false }).limit(50);
-    if (!error && data) setAuditLogs(data);
+    try {
+      // KODE BARU: Nembak ke API Backend lu yang pegang Kunci Master
+      const response = await fetch('/api/audit');
+      const result = await response.json();
+
+      if (response.ok && result.data) {
+        setAuditLogs(result.data);
+      } else {
+        console.error("Gagal mengambil log:", result.error);
+      }
+    } catch (error) {
+    console.error("Error fetching logs:", error);
+    } 
   };
 
   const openAuditModal = () => {
