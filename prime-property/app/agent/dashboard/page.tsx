@@ -50,20 +50,21 @@ export default function Dashboard() {
     setIsLoading(false);
   };
 
+  // KODE YANG DIPERBAIKI: Nembak ke API buat ngambil log pakai Service Role Key
   const fetchAuditLogs = async () => {
     try {
-      // KODE BARU: Nembak ke API Backend lu yang pegang Kunci Master
       const response = await fetch('/api/audit');
       const result = await response.json();
 
       if (response.ok && result.data) {
         setAuditLogs(result.data);
       } else {
-        console.error("Gagal mengambil log:", result.error);
+        console.error("Error API:", result.error);
+        toast.error("Gagal mengambil log aktivitas");
       }
     } catch (error) {
-    console.error("Error fetching logs:", error);
-    } 
+      console.error("Gagal fetch:", error);
+    }
   };
 
   const openAuditModal = () => {
@@ -76,7 +77,6 @@ export default function Dashboard() {
     setFormData({ ...formData, [e.target.name]: value });
   };
 
-  // Nembak ke API baru kita, bukan langsung ke Supabase
   const handleSubmitProperty = async (e: any) => {
     e.preventDefault();
     setIsSubmitting(true);
@@ -95,7 +95,7 @@ export default function Dashboard() {
       });
 
       const data = await res.json();
-      if (!res.ok) throw new Error(data.error); // Bakal nangkep error 403 Forbidden
+      if (!res.ok) throw new Error(data.error);
 
       toast.success(`Properti berhasil di${modalMode === "add" ? "tambahkan" : "perbarui"}!`);
       setIsModalOpen(false);
@@ -203,7 +203,7 @@ export default function Dashboard() {
           </div>
         </div>
 
-        {/* FILTER BAR (Tetap Sama) */}
+        {/* FILTER BAR */}
         <div className="bg-white p-4 rounded-2xl border border-slate-200 shadow-sm mb-6 flex flex-col md:flex-row gap-4">
           <div className="flex-1">
             <input type="text" placeholder="Cari properti atau kawasan..." value={searchTerm} onChange={(e) => setSearchTerm(e.target.value)} className="w-full bg-slate-50 border border-slate-200 rounded-xl px-4 py-2.5 text-sm focus:outline-none focus:ring-2 focus:ring-[#C9A961]/40" />
@@ -276,14 +276,18 @@ export default function Dashboard() {
                   <tr><th className="px-6 py-4">Waktu</th><th className="px-6 py-4">User</th><th className="px-6 py-4">Aksi</th><th className="px-6 py-4">Nama Properti</th></tr>
                 </thead>
                 <tbody className="divide-y divide-slate-50">
-                  {auditLogs.map((log) => (
-                    <tr key={log.id} className="hover:bg-slate-50/50">
-                      <td className="px-6 py-3 text-slate-500 text-xs">{new Date(log.created_at).toLocaleString("id-ID")}</td>
-                      <td className="px-6 py-3 font-medium text-slate-700">{log.user_email}</td>
-                      <td className="px-6 py-3"><span className="px-2 py-1 rounded text-xs font-bold bg-slate-100 text-slate-700">{log.action}</span></td>
-                      <td className="px-6 py-3 text-slate-700">{log.property_name}</td>
-                    </tr>
-                  ))}
+                  {auditLogs.length === 0 ? (
+                    <tr><td colSpan={4} className="px-6 py-8 text-center text-slate-500">Belum ada aktivitas yang tercatat.</td></tr>
+                  ) : (
+                    auditLogs.map((log) => (
+                      <tr key={log.id} className="hover:bg-slate-50/50">
+                        <td className="px-6 py-3 text-slate-500 text-xs">{new Date(log.created_at).toLocaleString("id-ID")}</td>
+                        <td className="px-6 py-3 font-medium text-slate-700">{log.user_email}</td>
+                        <td className="px-6 py-3"><span className="px-2 py-1 rounded text-xs font-bold bg-slate-100 text-slate-700">{log.action}</span></td>
+                        <td className="px-6 py-3 text-slate-700">{log.property_name}</td>
+                      </tr>
+                    ))
+                  )}
                 </tbody>
               </table>
             </div>
@@ -291,7 +295,7 @@ export default function Dashboard() {
         </div>
       )}
 
-      {/* MODAL FORM PROPERTI (Tetap Sama, tapi memanggil handleSubmitProperty) */}
+      {/* MODAL FORM PROPERTI */}
       {isModalOpen && userRole === "superadmin" && (
         <div className="fixed inset-0 z-50 flex items-center justify-center p-4 bg-slate-900/40 backdrop-blur-sm">
           <div className="bg-white rounded-2xl w-full max-w-3xl max-h-[90vh] overflow-y-auto shadow-2xl">
