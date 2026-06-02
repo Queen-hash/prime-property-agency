@@ -4,7 +4,7 @@ import type { NextRequest } from 'next/server';
 // In-memory store untuk simulasi tracking IP (Rate Limiting)
 const ipRequests = new Map<string, number[]>();
 
-export function middleware(request: NextRequest) {
+export function proxy(request: NextRequest) {
   // ==========================================
   // 1. LOGIKA RATE LIMITING (ANTI-SPAM)
   // ==========================================
